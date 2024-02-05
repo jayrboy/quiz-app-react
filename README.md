@@ -1,70 +1,237 @@
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
+# Getting Started with Create React App - Quiz App
 
 ### `npm start`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Quiz App
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```sh
+npm install create-react-app
+npx create-react-app quiz-app
+cd quiz-app && npm start
+```
 
-### `npm run eject`
+### Create a Project
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. app/App.js
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```js
+/* eslint-disable */
+import { useState, createContext } from 'react'
+import Menu from './components/Menu'
+import Quiz from './components/Quiz'
+import Score from './components/Score'
+import './App.css'
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+export const DataContext = createContext()
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+function App() {
+  const [appState, setAppState] = useState('menu')
+  const [score, setScore] = useState(0)
+  return (
+    <DataContext.Provider value={{ appState, setAppState, score, setScore }}>
+      <div className="App">
+        <h1>Web Development Quiz</h1>
+        {appState === 'menu' && <Menu />}
+        {appState === 'quiz' && <Quiz />}
+        {appState === 'score' && <Score />}
+      </div>
+    </DataContext.Provider>
+  )
+}
 
-## Learn More
+export default App
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+2. app/data
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- QuestionData.js (JavaScript Object)
 
-### Code Splitting
+```js
+const QuestionData = [
+  {
+    question: 'ข้อใดไม่ใช่ tag html',
+    A: '<react>',
+    B: '<a>',
+    C: '<p>',
+    D: '<h1>',
+    answer: 'A',
+  },
+  {
+    question: 'ข้อใดถูกต้องเกี่ยวกับ React',
+    A: 'ทำงานฝั่ง Server',
+    B: 'ใช้จัดการฐานข้อมูล',
+    C: 'เป็น JavaScript Library',
+    D: 'ถูกทุกข้อ',
+    answer: 'C',
+  },
+  {
+    question: 'ข้อใดคือชื่อ Browser',
+    A: 'PHP',
+    B: 'React',
+    C: 'MySQL',
+    D: 'Chrome',
+    answer: 'D',
+  },
+]
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+export default QuestionData
+```
 
-### Analyzing the Bundle Size
+3. app/component
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- ./component/Menu.js
 
-### Making a Progressive Web App
+```js
+import { useContext } from 'react'
+import { DataContext } from '../App'
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+const Menu = () => {
+  const { setAppState } = useContext(DataContext)
+  return (
+    <div className="menu">
+      <h1>Menu Component</h1>
+      <button onClick={() => setAppState('quiz')}>เริ่มทำแบบข้อสอบ</button>
+    </div>
+  )
+}
+export default Menu
+```
 
-### Advanced Configuration
+- ./component/Quiz.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```js
+import { useContext, useEffect, useState } from 'react'
+import { DataContext } from '../App'
+import QuestionData from '../data/QuestionData'
 
-### Deployment
+const Quiz = () => {
+  //   console.log(QuestionData)
+  const [current, setCurrent] = useState(0)
+  const [selectChoice, setSelectChoice] = useState('')
+  const { score, setScore, setAppState } = useContext(DataContext)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+  useEffect(() => {
+    checkAnswer()
+  }, [selectChoice])
 
-### `npm run build` fails to minify
+  const checkAnswer = () => {
+    if (selectChoice !== '') {
+      if (selectChoice === QuestionData[current].answer) {
+        setScore(score + 1)
+        nextQuestion()
+      } else {
+        nextQuestion()
+      }
+    }
+  }
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+  const nextQuestion = () => {
+    setSelectChoice('')
+    if (current === QuestionData.length - 1) {
+      setAppState('score')
+    } else {
+      setCurrent(current + 1)
+    }
+  }
+
+  return (
+    <div className="quiz">
+      <h1>{QuestionData[current].question}</h1>
+      <div className="choices">
+        <button onClick={() => setSelectChoice('A')}>
+          {QuestionData[current].A}
+        </button>
+        <button onClick={() => setSelectChoice('B')}>
+          {QuestionData[current].B}
+        </button>
+        <button onClick={() => setSelectChoice('C')}>
+          {QuestionData[current].C}
+        </button>
+        <button onClick={() => setSelectChoice('D')}>
+          {QuestionData[current].D}
+        </button>
+      </div>
+      <p>{`${current + 1} / ${QuestionData.length}`}</p>
+    </div>
+  )
+}
+export default Quiz
+```
+
+- ./component/Score.js
+
+```js
+import { useContext } from 'react'
+import { DataContext } from '../App'
+import QuestionData from '../data/QuestionData'
+
+const Score = () => {
+  const { score, setAppState, setScore } = useContext(DataContext)
+  const restartApp = () => {
+    setScore(0)
+    setAppState('menu')
+  }
+  return (
+    <div className="score">
+      <h1>สรุปผลคะแนน</h1>
+      <h2>
+        {score} / {QuestionData.length}
+      </h2>
+      <button onClick={restartApp}>ทำแบบทดสอบอีกครั้ง</button>
+    </div>
+  )
+}
+export default Score
+```
+
+#### CSS
+
+- App.css
+
+```css
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.menu,
+.quiz,
+.score {
+  width: 500px;
+  height: 500px;
+  background-color: lightblue;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu button,
+.quiz button,
+.score button {
+  width: 300px;
+  height: 50px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+button:active {
+  background: orange;
+  color: #fff;
+}
+```

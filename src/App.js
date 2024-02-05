@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+/* eslint-disable */
 
+import { useState, createContext } from 'react'
+import Menu from './components/Menu'
+import Quiz from './components/Quiz'
+import Score from './components/Score'
+import './App.css'
+
+//TODO: Context React Hook
+export const DataContext = createContext()
+
+//TODO: Set State and Context
 function App() {
+  const [appState, setAppState] = useState('menu')
+  const [score, setScore] = useState(0)
+
+  //TODO:
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <DataContext.Provider value={{ appState, setAppState, score, setScore }}>
+      <div className="App">
+        <h1>Web Development Quiz</h1>
+        {appState === 'menu' && <Menu />}
+        {appState === 'quiz' && <Quiz />}
+        {appState === 'score' && <Score />}
+      </div>
+    </DataContext.Provider>
+  )
 }
 
-export default App;
+export default App
